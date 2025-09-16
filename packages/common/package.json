@@ -1,0 +1,22 @@
+{
+  "name": "@codequest/common",
+  "main": "dist/index.js",
+  "exports": {
+    "./language": "./language/index.ts",
+    "./zod": "./zod/index.ts"
+  },
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
