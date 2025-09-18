@@ -1,9 +1,7 @@
-
 import { getExistingContests, getUpcomingContests } from "../app/db/contest";
 import { ContestCard } from "./ContestCard";
 import { Suspense } from "react";
 import { SkeletonCard } from "./SkeletonCard";
-
 
 export async function Contests() {
   return (

@@ -22,7 +22,6 @@ type Problem = {
   tags: string[]; // Added tags for better description
 };
 
-
 export async function Problems() {
   // Use Suspense fallback for skeletons
   return (
@@ -37,8 +36,8 @@ export async function Problems() {
                 </span>
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                Challenge yourself with our curated collection of problems. Filter by
-                difficulty and climb the leaderboard.
+                Challenge yourself with our curated collection of problems.
+                Filter by difficulty and climb the leaderboard.
               </p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -61,7 +60,7 @@ async function ProblemsContent() {
   const problems: Problem[] = problemsRaw.map((p: any) => ({
     ...p,
     tags: Array.isArray(p.tags) ? p.tags : [],
-    solved: typeof p.solved === 'number' ? p.solved : 0,
+    solved: typeof p.solved === "number" ? p.solved : 0,
   }));
 
   return (
@@ -75,7 +74,8 @@ async function ProblemsContent() {
             Popular Problems
           </h2>
           <p className="text-lg text-gray-700 dark:text-gray-200 max-w-2xl mx-auto animate-fade-in">
-            Challenge yourself with our curated collection of problems. Filter by difficulty, tags, and climb the leaderboard.
+            Challenge yourself with our curated collection of problems. Filter
+            by difficulty, tags, and climb the leaderboard.
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -103,13 +103,20 @@ function ProblemCard({ problem }: { problem: Problem }) {
           <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100 truncate pr-2">
             {problem.title}
           </CardTitle>
-          <Badge variant={difficultyVariant} className="px-3 py-1 text-xs font-bold animate-fade-in">
+          <Badge
+            variant={difficultyVariant}
+            className="px-3 py-1 text-xs font-bold animate-fade-in"
+          >
             {problem.difficulty}
           </Badge>
         </div>
         <div className="flex flex-wrap gap-2 pt-1">
-          {problem.tags?.map(tag => (
-            <Badge key={tag} variant="secondary" className="px-2 py-0.5 text-xs animate-fade-in">
+          {problem.tags?.map((tag) => (
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="px-2 py-0.5 text-xs animate-fade-in"
+            >
               {tag}
             </Badge>
           ))}
@@ -119,7 +126,9 @@ function ProblemCard({ problem }: { problem: Problem }) {
         <div className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
           <div className="flex items-center gap-2">
             <CheckCircledIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
-            <span className="font-medium">{problem.solved.toLocaleString()} Solves</span>
+            <span className="font-medium">
+              {problem.solved.toLocaleString()} Solves
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <LightningBoltIcon className="h-5 w-5 text-yellow-500 dark:text-yellow-300" />
@@ -129,11 +138,17 @@ function ProblemCard({ problem }: { problem: Problem }) {
       </CardContent>
       <CardFooter>
         {problem.id ? (
-          <PrimaryButton href={`/problem/${problem.id}`} className="w-full py-2 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md hover:from-blue-600 hover:to-purple-700 transition-all duration-200 animate-fade-in dark:from-blue-400 dark:to-purple-500">
+          <PrimaryButton
+            href={`/problem/${problem.id}`}
+            className="w-full py-2 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md hover:from-blue-600 hover:to-purple-700 transition-all duration-200 animate-fade-in dark:from-blue-400 dark:to-purple-500"
+          >
             Solve Problem
           </PrimaryButton>
         ) : (
-          <button className="w-full inline-flex items-center justify-center rounded-xl bg-gray-300 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 cursor-not-allowed" disabled>
+          <button
+            className="w-full inline-flex items-center justify-center rounded-xl bg-gray-300 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 cursor-not-allowed"
+            disabled
+          >
             Invalid Problem
           </button>
         )}
@@ -141,4 +156,3 @@ function ProblemCard({ problem }: { problem: Problem }) {
     </Card>
   );
 }
-

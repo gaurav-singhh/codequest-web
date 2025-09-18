@@ -9,10 +9,15 @@ export function Hero() {
           {/* Left Column: Text content and CTAs */}
           <div className="flex flex-col justify-center animate-fade-in">
             <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-300 dark:via-purple-300 dark:to-pink-300 drop-shadow-lg">
-              Welcome to <span className="inline-block animate-pulse">CodeQuest</span>
+              Welcome to{" "}
+              <span className="inline-block animate-pulse">CodeQuest</span>
             </h1>
             <p className="text-xl text-gray-700 dark:text-gray-300 mb-10 max-w-xl">
-              <span className="font-semibold text-purple-600 dark:text-purple-300">The ultimate arena for competitive programming.</span> Sharpen your skills, solve intricate problems, and rise to the top of the leaderboard.
+              <span className="font-semibold text-purple-600 dark:text-purple-300">
+                The ultimate arena for competitive programming.
+              </span>{" "}
+              Sharpen your skills, solve intricate problems, and rise to the top
+              of the leaderboard.
             </p>
             <div className="flex flex-col sm:flex-row gap-6">
               <Link
@@ -48,7 +53,7 @@ export function Hero() {
           </div>
         </div>
       </div>
-        {/* Removed styled-jsx. Use Tailwind animate-float class from tailwind.config.js */}
+      {/* Removed styled-jsx. Use Tailwind animate-float class from tailwind.config.js */}
     </section>
   );
 }

@@ -1,10 +1,13 @@
 "use client";
 import React, { useState, useEffect, createContext, useContext } from "react";
 
-const DarkModeContext = createContext<{
-  isDark: boolean;
-  setIsDark: (v: boolean) => void;
-} | undefined>(undefined);
+const DarkModeContext = createContext<
+  | {
+      isDark: boolean;
+      setIsDark: (v: boolean) => void;
+    }
+  | undefined
+>(undefined);
 
 export function DarkModeProvider({ children }: { children: React.ReactNode }) {
   // Hydration fix: don't set initial value until client
