@@ -136,12 +136,9 @@ jobs:
       - name: Update database schema if needed
         run: |
           echo "🔄 Checking if database update is needed..."
-      
-          # Generate Prisma client to ensure it's up to date
           npx prisma generate --schema=packages/db/prisma/schema.prisma
-      
-          # Note: Database migrations should be handled separately if schema changes
           echo "✅ Database schema check completed"
+        working-directory: ${{ github.workspace }}
 
       - name: Run tests on new problem
         run: |
