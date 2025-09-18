@@ -1,3 +1,4 @@
+
 name: Sync Problems from Admin Repository
 
 on:
@@ -15,6 +16,8 @@ on:
         description: "Source repository owner"
         required: true
         type: string
+  repository_dispatch:
+    types: [sync-problems]
 
 jobs:
   sync:
