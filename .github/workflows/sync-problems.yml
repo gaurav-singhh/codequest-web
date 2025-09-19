@@ -169,6 +169,7 @@ jobs:
         uses: actions/github-script@v6
         if: env.PROBLEM_SYNCED == 'true'
         with:
+          github-token: ${{ secrets.BOT_PAT }}
           script: |
             const problemName = process.env.PROBLEM_NAME;
             await new Promise(resolve => setTimeout(resolve, 5000));
