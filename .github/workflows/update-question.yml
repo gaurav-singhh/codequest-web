@@ -31,20 +31,14 @@ jobs:
       - name: Generate Prisma client
         run: cd packages/db && npx prisma generate --schema=prisma/schema.prisma
 
-      - name: Find changed problems
-        id: find_problems
-        run: |
-          git fetch origin main
-          git diff --name-only origin/main...${{ github.sha }} | grep '^problems/' | awk -F/ '{print $2}' | sort | uniq > changed_problems.txt
-          cat changed_problems.txt
-
       - name: Update each problem in database
         run: |
-          while read problem; do
-            if [ -n "$problem" ] && [ -d "problems/$problem" ]; then
-              echo "Updating $problem"
-              PROBLEM_SLUG=$problem MOUNT_PATH=problems npx ts-node packages/db/prisma/updateQuestion.ts
+          for problem in problems/*; do
+            if [ -d "$problem" ]; then
+              problem_slug=$(basename "$problem")
+              echo "Updating $problem_slug"
+              PROBLEM_SLUG=$problem_slug MOUNT_PATH=problems npx ts-node packages/db/prisma/updateQuestion.ts
             fi
-          done < changed_problems.txt
+          done
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
