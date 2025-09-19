@@ -138,13 +138,16 @@ jobs:
               console.error(`❌ Error syncing problem: ${error.message}`);
               process.exit(1);
             }
-  
+
       - name: Update database schema if needed
         run: |
           echo "🔄 Checking if database update is needed..."
-          npx prisma generate --schema=packages/db/prisma/schema.prisma
-          # For other commands, also specify the schema, for example:
-          # npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma
+          echo "Using Prisma schema at: $PRISMA_SCHEMA_PATH"
+          if [ ! -f "$PRISMA_SCHEMA_PATH" ]; then
+            echo "❌ Prisma schema not found at $PRISMA_SCHEMA_PATH"
+            exit 1
+          fi
+          npx prisma generate --schema="$PRISMA_SCHEMA_PATH"
           echo "✅ Database schema check completed"
 
       - name: Run tests on new problem
