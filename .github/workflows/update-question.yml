@@ -31,6 +31,9 @@ jobs:
       - name: Generate Prisma client
         run: cd packages/db && npx prisma generate --schema=prisma/schema.prisma
 
+      - name: Install ts-node and TypeScript globally
+        run: npm install -g ts-node typescript
+
       - name: Update each problem in database
         run: |
           for problem in problems/*; do
