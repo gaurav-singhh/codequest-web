@@ -22,19 +22,15 @@ jobs:
           node-version: 18
           cache: npm
 
-      # Install all dependencies for all workspaces
       - name: Install all workspace dependencies
         run: npm ci
 
-      # Build all workspace packages (important for local imports like @codequest/common)
       - name: Build all workspace packages
         run: npm run build --workspaces --if-present
 
-      # Generate Prisma client (after build, in case types are needed)
       - name: Generate Prisma client
         run: cd packages/db && npx prisma generate --schema=prisma/schema.prisma
 
-      # Update each problem in database
       - name: Update each problem in database
         run: |
           for problem in problems/*; do
