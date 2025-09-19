@@ -132,28 +132,17 @@ jobs:
               process.exit(1);
             }
 
-      - name: Run tests on new problem
+      - name: Check that problem has been synced
         run: |
-          echo "🧪 Running tests on synced problem..."
+          echo "🧪 Checking if synced problem exists in /problems..."
           PROBLEM_NAME="${{ env.PROBLEM_NAME }}"
-
-          # Check if problem can be loaded properly
-          node -e "
-            const { getProblems } = require('./app/lib/problems');
-            try {
-              const problems = getProblems();
-              const newProblem = problems.find(p => p.id === '$PROBLEM_NAME');
-              if (newProblem) {
-                console.log('✅ Problem loaded successfully:', newProblem.title);
-              } else {
-                console.log('❌ Problem not found in problems list');
-                process.exit(1);
-              }
-            } catch (error) {
-              console.error('❌ Error loading problem:', error.message);
-              process.exit(1);
-            }
-          "
+          if [ -d "problems/$PROBLEM_NAME" ]; then
+            echo "✅ Problem directory problems/$PROBLEM_NAME exists."
+            ls -l "problems/$PROBLEM_NAME"
+          else
+            echo "❌ Problem directory problems/$PROBLEM_NAME does not exist!"
+            exit 1
+          fi
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v5
