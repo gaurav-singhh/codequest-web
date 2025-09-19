@@ -41,6 +41,21 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Extract event inputs
+        id: extract
+        run: |
+          # For workflow_dispatch
+          if [ -n "${{ github.event.inputs.problem_name }}" ]; then
+            echo "problem_name=${{ github.event.inputs.problem_name }}" >> $GITHUB_ENV
+            echo "source_owner=${{ github.event.inputs.source_owner }}" >> $GITHUB_ENV
+            echo "source_repo=${{ github.event.inputs.source_repo }}" >> $GITHUB_ENV
+          else
+            # For repository_dispatch
+            echo "problem_name=${{ github.event.client_payload.problem_name }}" >> $GITHUB_ENV
+            echo "source_owner=${{ github.event.client_payload.source_owner }}" >> $GITHUB_ENV
+            echo "source_repo=${{ github.event.client_payload.source_repo }}" >> $GITHUB_ENV
+          fi
+
       - name: Download processed problem
         uses: actions/github-script@v6
         with:
@@ -50,14 +65,18 @@ jobs:
             const path = require('path');
             const { execSync } = require('child_process');
 
-            const problemName = '${{ github.event.inputs.problem_name }}';
-            const sourceOwner = '${{ github.event.inputs.source_owner }}';
-            const sourceRepo = '${{ github.event.inputs.source_repo }}';
+            const problemName = process.env.problem_name;
+            const sourceOwner = process.env.source_owner;
+            const sourceRepo = process.env.source_repo;
+
+            if (!problemName || !sourceOwner || !sourceRepo) {
+              console.error("Missing problem_name, source_owner, or source_repo in event payload.");
+              process.exit(1);
+            }
 
             console.log(`Syncing problem: ${problemName} from ${sourceOwner}/${sourceRepo}`);
 
             try {
-              // Get the processed problem files from admin repository
               const { data: problemContents } = await github.rest.repos.getContent({
                 owner: sourceOwner,
                 repo: sourceRepo,
@@ -65,18 +84,14 @@ jobs:
                 ref: 'main'
               });
               
-              // Create problems directory if it doesn't exist
               if (!fs.existsSync('problems')) {
                 fs.mkdirSync('problems', { recursive: true });
               }
-              
-              // Create problem directory
               const problemDir = `problems/${problemName}`;
               if (!fs.existsSync(problemDir)) {
                 fs.mkdirSync(problemDir, { recursive: true });
               }
               
-              // Download each file in the problem directory
               for (const item of problemContents) {
                 if (item.type === 'file') {
                   const { data: fileContent } = await github.rest.repos.getContent({
@@ -85,26 +100,21 @@ jobs:
                     path: item.path,
                     ref: 'main'
                   });
-                  
                   const fileName = path.basename(item.path);
                   const content = Buffer.from(fileContent.content, 'base64').toString('utf8');
-                  
                   fs.writeFileSync(path.join(problemDir, fileName), content);
                   console.log(`Downloaded: ${fileName}`);
                 } else if (item.type === 'dir') {
-                  // Handle subdirectories (tests, boilerplate, etc.)
                   const subDir = path.join(problemDir, item.name);
                   if (!fs.existsSync(subDir)) {
                     fs.mkdirSync(subDir, { recursive: true });
                   }
-                  
                   const { data: subContents } = await github.rest.repos.getContent({
                     owner: sourceOwner,
                     repo: sourceRepo,
                     path: item.path,
                     ref: 'main'
                   });
-                  
                   for (const subItem of subContents) {
                     if (subItem.type === 'file') {
                       const { data: subFileContent } = await github.rest.repos.getContent({
@@ -113,23 +123,17 @@ jobs:
                         path: subItem.path,
                         ref: 'main'
                       });
-                      
                       const subFileName = path.basename(subItem.path);
                       const subContent = Buffer.from(subFileContent.content, 'base64').toString('utf8');
-                      
                       fs.writeFileSync(path.join(subDir, subFileName), subContent);
                       console.log(`Downloaded: ${item.name}/${subFileName}`);
                     }
                   }
                 }
               }
-              
               console.log(`✅ Successfully synced problem: ${problemName}`);
-              
-              // Set output for next step
               execSync(`echo "PROBLEM_SYNCED=true" >> $GITHUB_ENV`);
               execSync(`echo "PROBLEM_NAME=${problemName}" >> $GITHUB_ENV`);
-              
             } catch (error) {
               console.error(`❌ Error syncing problem: ${error.message}`);
               process.exit(1);
@@ -140,14 +144,11 @@ jobs:
           echo "🔄 Checking if database update is needed..."
           npx prisma generate --schema=$PRISMA_SCHEMA_PATH
           echo "✅ Database schema check completed"
-        working-directory: ${{ github.workspace }}
 
       - name: Run tests on new problem
         run: |
           echo "🧪 Running tests on synced problem..."
           PROBLEM_NAME="${{ env.PROBLEM_NAME }}"
-
-          # Check if problem can be loaded properly
           node -e "
             const { getProblems } = require('./app/lib/problems');
             try {
@@ -175,7 +176,7 @@ jobs:
             ## 🎯 New Problem Added
 
             **Problem:** ${{ env.PROBLEM_NAME }}
-            **Source:** ${{ github.event.inputs.source_owner }}/${{ github.event.inputs.source_repo }}
+            **Source:** ${{ env.source_owner }}/${{ env.source_repo }}
 
             ### Changes
             - ✅ Problem synced from admin repository
@@ -208,26 +209,17 @@ jobs:
         with:
           script: |
             const problemName = process.env.PROBLEM_NAME;
-
-            // Wait a moment for PR to be created
             await new Promise(resolve => setTimeout(resolve, 5000));
-
-            // Find the PR we just created
             const { data: pulls } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: `sync/problem-${problemName}`,
               state: 'open'
             });
-
             if (pulls.length > 0) {
               const pr = pulls[0];
-              
               console.log(`Found PR #${pr.number} for problem ${problemName}`);
-              
-              // Auto-approve and merge if all checks pass
               try {
-                // Add approval review
                 await github.rest.pulls.createReview({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -235,8 +227,6 @@ jobs:
                   event: 'APPROVE',
                   body: '🤖 Automated approval: Problem validation passed'
                 });
-                
-                // Merge the PR
                 await github.rest.pulls.merge({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -245,21 +235,15 @@ jobs:
                   commit_message: `Automatically merged problem from admin repository`,
                   merge_method: 'squash'
                 });
-                
                 console.log(`✅ Successfully merged PR #${pr.number}`);
-                
-                // Comment on success
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: pr.number,
                   body: `🎉 Problem **${problemName}** has been successfully deployed and is now live on CodeQuest!`
                 });
-                
               } catch (error) {
                 console.error(`Failed to auto-merge: ${error.message}`);
-                
-                // Comment on failure
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -275,14 +259,10 @@ jobs:
         with:
           github-token: ${{ secrets.ADMIN_REPO_TOKEN }}
           script: |
-            const problemName = '${{ github.event.inputs.problem_name }}';
+            const problemName = process.env.problem_name;
             const success = process.env.PROBLEM_SYNCED === 'true';
-
-            // Create a deployment status comment or issue in admin repo
             const message = success 
               ? `✅ Problem **${problemName}** successfully deployed to production!`
               : `❌ Failed to deploy problem **${problemName}**. Check logs for details.`;
-              
             console.log(message);
-
-            // You could create an issue or comment here to track deployment status
+            // Optionally, create an issue or comment in admin repo here to track deployment status
