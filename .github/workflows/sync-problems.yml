@@ -23,6 +23,9 @@ jobs:
   sync:
     runs-on: ubuntu-latest
 
+    env:
+      PRISMA_SCHEMA_PATH: packages/db/prisma/schema.prisma
+
     steps:
       - name: Checkout web repository
         uses: actions/checkout@v4
@@ -136,7 +139,7 @@ jobs:
       - name: Update database schema if needed
         run: |
           echo "🔄 Checking if database update is needed..."
-          npx prisma generate --schema=packages/db/prisma/schema.prisma
+          npx prisma generate --schema=$PRISMA_SCHEMA_PATH
           echo "✅ Database schema check completed"
         working-directory: ${{ github.workspace }}
 
