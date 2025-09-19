@@ -28,7 +28,7 @@ jobs:
         id: find_problems
         run: |
           git fetch origin main
-          git diff --name-only ${{ github.sha }} ${{ github.sha }}~1 | grep '^problems/' | awk -F/ '{print $2}' | sort | uniq > changed_problems.txt
+          git diff --name-only origin/main...${{ github.sha }} | grep '^problems/' | awk -F/ '{print $2}' | sort | uniq > changed_problems.txt
           cat changed_problems.txt
 
       - name: Update each problem in database
