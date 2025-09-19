@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings 0",
-    "postinstall": "if [ \"$CI\" != \"true\" ]; then prisma generate --schema=packages/db/prisma/schema.prisma; fi"
+  "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
     "@codequest/common": "workspace:*",
