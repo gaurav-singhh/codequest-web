@@ -1,0 +1,43 @@
+name: Update Question in Database
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'problems/**'
+
+jobs:
+  update-question:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Find changed problems
+        id: find_problems
+        run: |
+          git fetch origin main
+          git diff --name-only ${{ github.sha }} ${{ github.sha }}~1 | grep '^problems/' | awk -F/ '{print $2}' | sort | uniq > changed_problems.txt
+          cat changed_problems.txt
+
+      - name: Update each problem in database
+        run: |
+          while read problem; do
+            if [ -n "$problem" ] && [ -d "problems/$problem" ]; then
+              echo "Updating $problem"
+              PROBLEM_SLUG=$problem MOUNT_PATH=problems npx ts-node packages/db/prisma/updateQuestion.ts
+            fi
+          done < changed_problems.txt
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
