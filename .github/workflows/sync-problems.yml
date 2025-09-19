@@ -132,6 +132,18 @@ jobs:
               process.exit(1);
             }
 
+      - name: Update database schema if needed
+        run: |
+          echo "🔄 Checking if database update is needed..."
+          SCHEMA_PATH="$GITHUB_WORKSPACE/packages/db/prisma/schema.prisma"
+          echo "Schema absolute path: $SCHEMA_PATH"
+          if [ ! -f "$SCHEMA_PATH" ]; then
+            echo "❌ Prisma schema not found at $SCHEMA_PATH"
+            exit 1
+          fi
+          npx prisma generate --schema="$SCHEMA_PATH"
+          echo "✅ Database schema check completed"
+
       - name: Run tests on new problem
         run: |
           echo "🧪 Running tests on synced problem..."
