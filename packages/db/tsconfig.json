@@ -1,8 +1,12 @@
 {
-  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
+    "target": "es2020",
+    "module": "CommonJS",
     "outDir": "dist",
-    "module": "CommonJS"
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src", "prisma"],
   "exclude": ["node_modules", "dist"]
