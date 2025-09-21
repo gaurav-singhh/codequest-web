@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Problems } from "../../components/Problems";
 
 export default function Page(): JSX.Element {
