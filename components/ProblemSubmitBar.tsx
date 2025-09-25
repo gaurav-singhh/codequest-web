@@ -116,33 +116,45 @@ function SubmitProblem({
     setCode(defaultCode);
   }, [problem]);
 
-  async function pollWithBackoff(id: string, retries: number) {
+  // --- MODIFIED LOGIC ---
+  async function pollWithBackoff(
+    id: string,
+    retries: number,
+    delay: number // 1. Added delay parameter
+  ) {
     if (retries === 0) {
       setStatus(SubmitStatus.SUBMIT);
       toast.error("Not able to get status ");
       return;
     }
 
-    const response = await axios.get(`/api/submission/?id=${id}`);
-
-    if (response.data.submission.status === "PENDING") {
-      setTestcases(response.data.testCases);
-      await new Promise((resolve) => setTimeout(resolve, 2.5 * 1000));
-      pollWithBackoff(id, retries - 1);
-    } else {
-      if (response.data.submission.status === "AC") {
-        setStatus(SubmitStatus.ACCEPTED);
-        setTestcases(response.data.testCases);
-        toast.success("Accepted!");
-        return;
-      } else {
+    try {
+        const response = await axios.get(`/api/submission/?id=${id}`);
+        
+        if (response.data.submission.status === "PENDING") {
+            setTestcases(response.data.testCases);
+            // 2. Use the dynamic delay value
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            // 3. Increase the delay for the next poll (e.g., multiply by 1.5)
+            pollWithBackoff(id, retries - 1, delay * 2);
+        } else {
+            if (response.data.submission.status === "AC") {
+                setStatus(SubmitStatus.ACCEPTED);
+                setTestcases(response.data.testCases);
+                toast.success("Accepted!");
+            } else {
+                setStatus(SubmitStatus.FAILED);
+                toast.error("Failed :(");
+                setTestcases(response.data.testCases);
+            }
+        }
+    } catch (error) {
+        // Added basic error handling for the polling request
         setStatus(SubmitStatus.FAILED);
-        toast.error("Failed :(");
-        setTestcases(response.data.testCases);
-        return;
-      }
+        toast.error("Error fetching submission status.");
     }
   }
+  // --- END OF MODIFIED LOGIC ---
 
   async function submit() {
     setStatus(SubmitStatus.PENDING);
@@ -153,7 +165,9 @@ function SubmitProblem({
       problemId: problem.id,
       activeContestId: contestId,
     });
-    pollWithBackoff(response.data.id, 10);
+    // 4. Start polling with an initial delay (e.g., 1500ms)
+    const INITIAL_DELAY = 1500;
+    pollWithBackoff(response.data.id, 10, INITIAL_DELAY);
   }
 
   return (
@@ -201,10 +215,10 @@ function SubmitProblem({
             status === SubmitStatus.PENDING
               ? "bg-blue-500 hover:bg-blue-500 cursor-not-allowed"
               : status === SubmitStatus.ACCEPTED
-                ? "bg-green-500 hover:bg-green-600"
-                : status === SubmitStatus.FAILED
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-blue-600 hover:bg-blue-700"
+              ? "bg-green-500 hover:bg-green-600"
+              : status === SubmitStatus.FAILED
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-blue-600 hover:bg-blue-700"
           }`}
           onClick={submit}
         >
