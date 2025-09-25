@@ -46,16 +46,6 @@ codeQuest is built on a decoupled, asynchronous architecture to ensure scalabili
 * **Redis Queue:** Used by Judge0 to manage and distribute code evaluation tasks to its workers.
 * **Webhook Handler (Node.js):** A separate service that listens for results from Judge0 and updates the database accordingly.
 
-### Architectural Diagrams:
-
-#### **1. Code Submission Flow**
-
-![Code Submission Flow](https://i.imgur.com/your-submission-flow-image.png)
-
-#### **2. Result Polling Flow**
-
-![Result Polling Flow](https://i.imgur.com/your-polling-flow-image.png)
-
 ---
 
 ## 🔄 Core Workflows
